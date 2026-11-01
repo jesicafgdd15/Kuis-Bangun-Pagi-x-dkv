@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kuis Bangun Pagi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#CFE3FA;--ink:#14213D;--panel:#FFFFFF;--muted:#4A5D7E;--hill:#2F8F5B;--hill2:#237248;--sun:#FFB92E;
+  --red:#E5484D;--blue:#2F7DE1;--gold:#F5B82E;--ok:#1E9E5A;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;--bg:#14213D;--ink:#F3F6FC;--panel:#1F2F55;--muted:#A9B8D6;--hill:#1F6B45;--hill2:#17553A;--sun:#FFB92E;}}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#14213D;--ink:#F3F6FC;--panel:#1F2F55;--muted:#A9B8D6;--hill:#1F6B45;--hill2:#17553A;--sun:#FFB92E;}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font:500 18px/1.4 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.app{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:18px 18px 230px;min-height:100vh}
+.top{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.logo{font-weight:700;font-size:22px}
+.chip{background:var(--panel);border-radius:99px;padding:6px 16px;font-weight:600}
+[hidden]{display:none!important}
+
+/* adegan matahari terbit */
+.scene{position:fixed;left:0;right:0;bottom:0;height:200px;z-index:1;pointer-events:none;overflow:hidden}
+.sun{position:absolute;left:50%;bottom:0;width:130px;height:130px;margin-left:-65px;border-radius:50%;background:var(--sun);
+  box-shadow:0 0 0 14px color-mix(in srgb,var(--sun) 30%,transparent);
+  transform:translateY(calc(120px - var(--p,0)*150px));transition:transform 1s cubic-bezier(.3,1.3,.5,1)}
+.hill{position:absolute;bottom:-90px;width:70%;height:160px;border-radius:50%;background:var(--hill)}
+.h1{left:-15%}.h2{right:-15%;background:var(--hill2);height:140px}
+.h3{left:20%;width:60%;bottom:-110px;background:var(--hill)}
+
+/* menu */
+.menu{text-align:center;padding-top:6vh}
+.menu h1{font-size:clamp(46px,11vw,84px);line-height:1;margin:0 0 10px;font-weight:700}
+.menu p{color:var(--muted);margin:0 auto 30px;max-width:30ch}
+.btn{display:block;width:min(340px,100%);margin:12px auto;padding:16px;border:0;border-radius:14px;font-weight:700;font-size:24px;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.main{background:var(--ok);color:#fff}
+.alt{background:var(--panel);color:var(--ink)}
+
+/* pertanyaan */
+.bar{height:12px;background:var(--panel);border-radius:6px;overflow:hidden;margin:16px 0 22px}
+.bar i{display:block;height:100%;width:100%;background:var(--gold);transform-origin:left;transition:background .3s}
+.bar i.low{background:var(--red)}
+.q{background:var(--panel);border-radius:16px;padding:24px 22px;font-size:clamp(22px,4.6vw,30px);font-weight:600;text-align:center;margin-bottom:18px}
+.opts{display:grid;gap:12px}
+.opt{display:flex;align-items:center;gap:14px;text-align:left;border:0;border-radius:14px;padding:16px 18px;color:#fff;font-weight:600;font-size:20px;box-shadow:0 5px 0 rgba(0,0,0,.25);transition:opacity .25s,transform .1s}
+.opt[data-k="A"]{background:var(--red)}
+.opt[data-k="B"]{background:var(--blue)}
+.opt[data-k="C"]{background:var(--gold);color:#14213D}
+.opt:not(:disabled):active{transform:translateY(3px)}
+.opt:disabled{cursor:default}
+.opt.dim{opacity:.35}
+.opt .ic{flex:none;width:34px;height:34px;display:grid;place-items:center;font-weight:700;border-radius:50%;background:rgba(0,0,0,.2);font-size:18px}
+.opt .tag{margin-left:auto;font-size:26px;font-weight:700}
+.opt.right{outline:5px solid var(--ok);outline-offset:2px}
+.fb{margin-top:18px;background:var(--panel);border-radius:14px;padding:16px 20px;text-align:center}
+.fb b{font-size:26px;display:block}
+.fb.ok b{color:var(--ok)}.fb.no b{color:var(--red)}
+.fb small{color:var(--muted);font-size:16px}
+
+/* hasil */
+.res{text-align:center;padding-top:4vh}
+.res h2{font-size:30px;margin:0}
+.big{font-size:clamp(80px,22vw,150px);font-weight:700;line-height:1;margin:6px 0}
+.big span{font-size:.4em;color:var(--muted)}
+.res p{margin:4px 0}
+
+@media (max-width:480px){.app{padding-bottom:210px}.scene{height:180px}.sun{width:110px;height:110px;margin-left:-55px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true" id="scene">
+  <div class="sun"></div><div class="hill h1"></div><div class="hill h2"></div><div class="hill h3"></div>
+</div>
+
+<div class="app">
+  <div class="top"><div class="logo">☀ Kuis Bangun Pagi</div><div class="chip" id="chip" hidden></div></div>
+
+  <section class="menu" id="menu">
+    <h1>Kuis Bangun Pagi</h1>
+    <p>5 pertanyaan, 3 pilihan jawaban, 20 detik tiap soal. Makin cepat menjawab, makin besar poinmu.</p>
+    <button class="btn main" id="bMain">1. Main</button>
+    <button class="btn alt" id="bKeluar">2. Keluar</button>
+  </section>
+
+  <section id="game" hidden>
+    <div class="bar" role="timer" aria-label="Sisa waktu"><i id="tbar"></i></div>
+    <div class="q" id="q" aria-live="polite"></div>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb" hidden aria-live="assertive"><b id="fbT"></b><small id="fbS"></small>
+      <button class="btn main" id="bNext" style="margin-bottom:0"></button></div>
+  </section>
+
+  <section class="res" id="res" hidden>
+    <h2>Skor akhir kamu</h2>
+    <div class="big"><span id="rS"></span></div>
+    <p id="rMsg"></p>
+    <p class="chip" style="display:inline-block;margin:10px 0 18px" id="rPoin"></p>
+    <button class="btn main" id="bAgain">Main lagi</button>
+    <button class="btn alt" id="bMenu">Kembali ke menu</button>
+  </section>
+
+  <section class="res" id="bye" hidden>
+    <h2>Selesai. Terima kasih!</h2>
+    <p style="margin-bottom:22px;color:var(--muted)">Sampai jumpa besok pagi.</p>
+    <button class="btn alt" id="bBack">Kembali ke menu</button>
+  </section>
+</div>
+
+<script>
+var SOAL=[
+ {t:"Apa manfaat utama bangun pagi?",o:["Membuat tubuh malas","Melatih kedisiplinan","Membuat terlambat sekolah"],k:"B"},
+ {t:"Pukul berapa sebaiknya kita bangun pagi?",o:["04.00-05.00","10.00-11.00","12.00-13.00"],k:"A"},
+ {t:"Apa yang sebaiknya dilakukan setelah bangun tidur?",o:["Tidur kembali","Bermain HP","Merapikan tempat tidur"],k:"C"},
+ {t:"Mengapa bangun pagi penting bagi pelajar?",o:["Agar tidak perlu belajar","Agar tidak terlambat sekolah","Agar bisa bermain sepanjang hari"],k:"B"},
+ {t:"Apa akibat jika sering bangun kesiangan?",o:["Lebih disiplin","Selalu tepat waktu","Terburu-buru dan terlambat"],k:"C"}
+];
+var WAKTU=20,L=["A","B","C"],SHAPE=["▲","◆","●"];
+var $=function(i){return document.getElementById(i)};
+var idx=0,skor=0,poin=0,sisa=WAKTU,tmr=null,terkunci=true,mulai=0;
+
+function layar(n){["menu","game","res","bye"].forEach(function(x){$(x).hidden=x!==n});
+  $("chip").hidden=n!=="game";}
+function matahari(p){$("scene").style.setProperty("--p",p)}
+
+function mainBaru(){idx=0;skor=0;poin=0;layar("game");tampil()}
+function tampil(){
+  var s=SOAL[idx];terkunci=false;
+  $("q").textContent=(idx+1)+". "+s.t;
+  $("chip").textContent="Soal "+(idx+1)+" / "+SOAL.length;
+  $("fb").hidden=true;
+  var h="";
+  s.o.forEach(function(teks,i){
+    h+='<button class="opt" data-k="'+L[i]+'"><span class="ic">'+SHAPE[i]+'</span><span>'+L[i]+". "+teks+'</span><span class="tag"></span></button>';
+  });
+  $("opts").innerHTML=h;
+  document.querySelectorAll(".opt").forEach(function(b){b.addEventListener("click",function(){jawab(b.dataset.k)})});
+  matahari(idx/SOAL.length+.1);
+  mulai=Date.now();sisa=WAKTU;gerak();
+  clearInterval(tmr);tmr=setInterval(function(){
+    sisa=Math.max(0,WAKTU-(Date.now()-mulai)/1000);gerak();
+    if(sisa<=0){clearInterval(tmr);jawab(null)}
+  },100);
+}
+function gerak(){var b=$("tbar");b.style.transform="scaleX("+(sisa/WAKTU)+")";b.className=sisa<6?"low":""}
+
+function jawab(k){
+  if(terkunci)return;terkunci=true;clearInterval(tmr);
+  var s=SOAL[idx],benar=k===s.k,fb=$("fb");
+  var tambah=benar?Math.round(500+500*sisa/WAKTU):0;
+  if(benar){skor++;poin+=tambah}
+  document.querySelectorAll(".opt").forEach(function(b){
+    b.disabled=true;
+    if(b.dataset.k===s.k){b.classList.add("right");b.querySelector(".tag").textContent="✓"}
+    else{b.classList.add("dim");if(b.dataset.k===k)b.querySelector(".tag").textContent="✗"}
+  });
+  fb.className="fb "+(benar?"ok":"no");
+  $("fbT").textContent=benar?"Benar":(k===null?"Waktu habis":"Salah");
+  $("fbS").textContent=benar?"+"+tambah+" poin":"Jawaban yang benar: "+s.k;
+  $("bNext").textContent=idx<SOAL.length-1?"Lanjut":"Lihat skor";
+  fb.hidden=false;$("bNext").focus({preventScroll:false});
+  matahari((idx+1)/SOAL.length);
+}
+function lanjut(){
+  if(idx<SOAL.length-1){idx++;tampil()}else hasil();
+}
+function hasil(){
+  layar("res");matahari(1);
+  $("rS").innerHTML=skor+"<span> / "+SOAL.length+"</span>";
+  $("rPoin").textContent=poin+" poin";
+  $("rMsg").textContent="Skor akhir kamu: "+skor+" dari "+SOAL.length+". "+
+    (skor===5?"Sempurna! Kamu juara bangun pagi.":skor>=3?"Bagus! Sedikit lagi sempurna.":"Ayo coba lagi, besok bangun lebih pagi!");
+}
+function menu(){clearInterval(tmr);layar("menu");matahari(.1)}
+
+$("bMain").onclick=mainBaru;
+$("bKeluar").onclick=function(){layar("bye");matahari(.1)};
+$("bNext").onclick=lanjut;
+$("bAgain").onclick=mainBaru;
+$("bMenu").onclick=menu;$("bBack").onclick=menu;
+document.addEventListener("keydown",function(e){
+  if($("game").hidden)return;
+  var m={a:"A",b:"B",c:"C","1":"A","2":"B","3":"C"}[e.key.toLowerCase()];
+  if(m&&!terkunci)jawab(m);
+});
+matahari(.1);
+</script>
+</body>
+</html>
